@@ -5,6 +5,8 @@ import 'package:bench/utils/CalcUtil.dart';
 import 'package:bench/utils/ValidateValuesUtil.dart';
 import 'package:flutter/material.dart';
 
+import 'ResultScreen.dart';
+
 String chosenValue = '';
 
 class MainScreen extends StatefulWidget {
@@ -60,6 +62,14 @@ class MainScreenState extends State<MainScreen> {
     // print(medName);
     bool isAgeOK = ValidateValuesUtil().validateAge(age);
     bool isWeightOK = ValidateValuesUtil().validateWeight(weight);
+    Med chosenMed = meds.first;
+
+    for(Med m in meds) {
+      if(m.getName() == medName) {
+        chosenMed = m;
+        break;
+      }
+    }
 
     if(!isAgeOK || !isWeightOK) {
       setState(() {
@@ -69,6 +79,10 @@ class MainScreenState extends State<MainScreen> {
     else {
       setState(() {
         isErrorVisible = false;
+        Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ResultScreen(double.tryParse(weight)!, chosenMed)),
+        );
       });
     }
   }

@@ -55,4 +55,8 @@ class CalcUtil {
     return result;
   }
 
+  String roundDouble(double x) {
+    return x.toStringAsFixed(2);
+  }
+
 }
