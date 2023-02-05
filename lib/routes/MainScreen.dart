@@ -189,7 +189,7 @@ class MainScreenState extends State<MainScreen> {
                           onPressed: () {
                             submit(ageController.text, weightController.text, chosenValue);
                           },
-                          child: Text('Test'),
+                          child: const Text('Oblicz'),
                         ),
                         const SizedBox(height: 20,),
                         Visibility(
