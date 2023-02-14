@@ -81,7 +81,7 @@ class MainScreenState extends State<MainScreen> {
         isErrorVisible = false;
         Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ResultScreen(double.tryParse(weight)!, chosenMed)),
+            MaterialPageRoute(builder: (context) => ResultScreen(double.tryParse(weight.replaceAll(',', '.'))!, chosenMed)),
         );
       });
     }
