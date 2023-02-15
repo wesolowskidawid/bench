@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'ResultScreen.dart';
 
 String chosenValue = '';
+bool _ageValidated = false;
 
 class MainScreen extends StatefulWidget {
   MainScreen({Key? key}) : super(key: key);
@@ -19,6 +20,13 @@ class MainScreen extends StatefulWidget {
       Med('Pulmicort', 0.5, 1.0, List.of({10, 20}), 2, 0.25, 5.0)
     },
   );
+
+  void setAgeValidated(bool validated) {
+    _ageValidated = validated;
+  }
+  bool getAgeValidated() {
+    return _ageValidated;
+  }
 
   @override
   State<MainScreen> createState() => MainScreenState();
@@ -70,6 +78,8 @@ class MainScreenState extends State<MainScreen> {
         break;
       }
     }
+
+    print("wiek: " + ageController.text);
 
     if(!isAgeOK || !isWeightOK) {
       setState(() {
@@ -134,20 +144,7 @@ class MainScreenState extends State<MainScreen> {
                         ),
                         SizedBox(
                           width: constraints.maxWidth*0.5,
-                          child: TextField(
-                            controller: ageController,
-                            decoration: InputDecoration(
-                              enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(color: Color(0xff4ba9c8)),
-                                  borderRadius: BorderRadius.circular(20),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Color(0xff4ba9c8)),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              hintText: 'Wiek dziecka',
-                            ),
-                          ),
+                          child: AgeTextField(controller: ageController,),
                         ),
                         const SizedBox(height: 40,),
                         const Text(
@@ -159,6 +156,7 @@ class MainScreenState extends State<MainScreen> {
                         SizedBox(
                           width: constraints.maxWidth*0.5,
                           child: TextField(
+                            key: const Key("weightTextField"),
                             controller: weightController,
                             decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
@@ -267,6 +265,49 @@ class DropdownMenuState extends State<DropdownMenu> {
             );
           }).toList(),
         ),
+    );
+  }
+}
+
+class AgeTextField extends StatefulWidget {
+  const AgeTextField({Key? key, required this.controller}) : super(key: key);
+
+  final TextEditingController controller;
+
+  @override
+  State<AgeTextField> createState() => AgeTextFieldState();
+}
+
+class AgeTextFieldState extends State<AgeTextField> {
+
+  void _validate() {
+    MainScreen().setAgeValidated(ValidateValuesUtil().validateAge(widget.controller.text));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Start listening to changes.
+    widget.controller.addListener(_validate);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      key: const Key('ageTextField'),
+      controller: widget.controller,
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xff4ba9c8)),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xff4ba9c8)),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        hintText: 'Wiek dziecka',
+      ),
     );
   }
 }
