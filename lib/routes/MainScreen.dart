@@ -9,6 +9,7 @@ import 'ResultScreen.dart';
 
 String chosenValue = '';
 bool _ageValidated = false;
+bool _weightValidated = false;
 
 class MainScreen extends StatefulWidget {
   MainScreen({Key? key}) : super(key: key);
@@ -27,6 +28,12 @@ class MainScreen extends StatefulWidget {
   bool getAgeValidated() {
     return _ageValidated;
   }
+  void setWeightValidated(bool validated) {
+    _weightValidated = validated;
+  }
+  bool getWeightValidated() {
+    return _weightValidated;
+  }
 
   @override
   State<MainScreen> createState() => MainScreenState();
@@ -41,27 +48,27 @@ class MainScreenState extends State<MainScreen> {
 
   bool isErrorVisible = false;
 
-  void calc() {
-    double weight = 40.0;
-    print('Weight: ' + weight.toString() + 'kg');
-    double activeSubstance;
-    double dose;
-    for(Med m in meds) {
-      print('---\nMed name: ' + m.getName());
-      print('Power: ' + m.getPowerMg().toString() + 'mg/' + m.getPowerMl().toString() + 'ml');
-      print('Dose: ' + m.getDoseMg().toString() + 'mg/' + m.getDoseKg().toString() + 'kg');
-      activeSubstance = CalcUtil().calculateActiveSubstance(weight, m.getDoseMg(), m.getDoseKg());
-      print('Active Substance: ' + activeSubstance.toString() + 'ml');
-      dose = CalcUtil().calculateDose(activeSubstance, m.powerMg, m.powerMl);
-      print('Dose: ' + dose.toString() + 'ml');
-      if(m.getCapsuleAmount() == 0) {
-        print('Package size: ' + CalcUtil().calculatePackageSizeNoCapsules(7, 2, dose, m.getPackageSizeMl()).toString());
-      }
-      else {
-        print('Package size: ' + CalcUtil().calculatePackageSizeCapsules(7, 2, dose, m.getPackageSizeMl(), m.getCapsuleAmount()).toString());
-      }
-    }
-  }
+  // void calc() {
+  //   double weight = 40.0;
+  //   print('Weight: ' + weight.toString() + 'kg');
+  //   double activeSubstance;
+  //   double dose;
+  //   for(Med m in meds) {
+  //     print('---\nMed name: ' + m.getName());
+  //     print('Power: ' + m.getPowerMg().toString() + 'mg/' + m.getPowerMl().toString() + 'ml');
+  //     print('Dose: ' + m.getDoseMg().toString() + 'mg/' + m.getDoseKg().toString() + 'kg');
+  //     activeSubstance = CalcUtil().calculateActiveSubstance(weight, m.getDoseMg(), m.getDoseKg());
+  //     print('Active Substance: ' + activeSubstance.toString() + 'ml');
+  //     dose = CalcUtil().calculateDose(activeSubstance, m.powerMg, m.powerMl);
+  //     print('Dose: ' + dose.toString() + 'ml');
+  //     if(m.getCapsuleAmount() == 0) {
+  //       print('Package size: ' + CalcUtil().calculatePackageSizeNoCapsules(7, 2, dose, m.getPackageSizeMl()).toString());
+  //     }
+  //     else {
+  //       print('Package size: ' + CalcUtil().calculatePackageSizeCapsules(7, 2, dose, m.getPackageSizeMl(), m.getCapsuleAmount()).toString());
+  //     }
+  //   }
+  // }
 
   void submit(String age, String weight, String medName) {
     // print('Submit: ');
@@ -78,8 +85,6 @@ class MainScreenState extends State<MainScreen> {
         break;
       }
     }
-
-    print("wiek: " + ageController.text);
 
     if(!isAgeOK || !isWeightOK) {
       setState(() {
@@ -144,7 +149,7 @@ class MainScreenState extends State<MainScreen> {
                         ),
                         SizedBox(
                           width: constraints.maxWidth*0.5,
-                          child: AgeTextField(controller: ageController,),
+                          child: FormTextField(controller: ageController, type: TextFieldType.age,),
                         ),
                         const SizedBox(height: 40,),
                         const Text(
@@ -155,21 +160,7 @@ class MainScreenState extends State<MainScreen> {
                         ),
                         SizedBox(
                           width: constraints.maxWidth*0.5,
-                          child: TextField(
-                            key: const Key("weightTextField"),
-                            controller: weightController,
-                            decoration: InputDecoration(
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Color(0xff4ba9c8)),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Color(0xff4ba9c8)),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              hintText: 'Waga dziecka',
-                            ),
-                          ),
+                          child: FormTextField(controller: weightController, type: TextFieldType.weight,),
                         ),
                         const SizedBox(height: 40,),
                         const Text(
@@ -211,6 +202,10 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 }
+
+/*
+    MED DROPDOWN MENU
+ */
 
 class DropdownMenu extends StatefulWidget {
   const DropdownMenu({key});
@@ -269,19 +264,33 @@ class DropdownMenuState extends State<DropdownMenu> {
   }
 }
 
-class AgeTextField extends StatefulWidget {
-  const AgeTextField({Key? key, required this.controller}) : super(key: key);
+/*
+    TEXT FIELDS
+ */
 
-  final TextEditingController controller;
-
-  @override
-  State<AgeTextField> createState() => AgeTextFieldState();
+enum TextFieldType {
+  age, weight
 }
 
-class AgeTextFieldState extends State<AgeTextField> {
+class FormTextField extends StatefulWidget {
+  const FormTextField({Key? key, required this.controller, required this.type}) : super(key: key);
+
+  final TextEditingController controller;
+  final TextFieldType type;
+
+  @override
+  State<FormTextField> createState() => FormTextFieldState();
+}
+
+class FormTextFieldState extends State<FormTextField> {
 
   void _validate() {
-    MainScreen().setAgeValidated(ValidateValuesUtil().validateAge(widget.controller.text));
+    if(widget.type == TextFieldType.age) {
+      MainScreen().setAgeValidated(ValidateValuesUtil().validateAge(widget.controller.text));
+    }
+    else {
+      MainScreen().setWeightValidated(ValidateValuesUtil().validateWeight(widget.controller.text));
+    }
   }
 
   @override
@@ -294,8 +303,19 @@ class AgeTextFieldState extends State<AgeTextField> {
 
   @override
   Widget build(BuildContext context) {
+    Key _key;
+    String _hint;
+    if(widget.type == TextFieldType.age) {
+      _key = const Key('ageTextField');
+      _hint = "Wiek dziecka";
+    }
+    else {
+      _key = const Key('weightTextField');
+      _hint = "Waga dziecka";
+    }
+
     return TextField(
-      key: const Key('ageTextField'),
+      key: _key,
       controller: widget.controller,
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(
@@ -306,7 +326,7 @@ class AgeTextFieldState extends State<AgeTextField> {
           borderSide: const BorderSide(color: Color(0xff4ba9c8)),
           borderRadius: BorderRadius.circular(20),
         ),
-        hintText: 'Wiek dziecka',
+        hintText: _hint,
       ),
     );
   }
