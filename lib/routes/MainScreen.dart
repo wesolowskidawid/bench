@@ -141,6 +141,9 @@ class MainScreenState extends State<MainScreen> {
                         const SizedBox(
                           height: 20,
                         ),
+                        /*
+                            AGE
+                         */
                         const Text(
                             'Wprowadź wiek dziecka:',
                             style: TextStyle(
@@ -152,6 +155,9 @@ class MainScreenState extends State<MainScreen> {
                           child: FormTextField(controller: ageController, type: TextFieldType.age,),
                         ),
                         const SizedBox(height: 40,),
+                        /*
+                            WEIGHT
+                         */
                         const Text(
                             'Wprowadź wagę dziecka:',
                             style: TextStyle(
@@ -163,6 +169,9 @@ class MainScreenState extends State<MainScreen> {
                           child: FormTextField(controller: weightController, type: TextFieldType.weight,),
                         ),
                         const SizedBox(height: 40,),
+                        /*
+                            DROPDOWN MENU
+                         */
                         const Text(
                             'Wybierz lek z listy:',
                             style: TextStyle(
@@ -174,6 +183,9 @@ class MainScreenState extends State<MainScreen> {
                           child: const DropdownMenu(),
                         ),
                         const SizedBox(height: 40,),
+                        /*
+                            SUBMIT BUTTON
+                         */
                         RaisedButton(
                           onPressed: () {
                             submit(ageController.text, weightController.text, chosenValue);
@@ -182,6 +194,7 @@ class MainScreenState extends State<MainScreen> {
                         ),
                         const SizedBox(height: 20,),
                         Visibility(
+                          key: const Key('errorText'),
                           visible: isErrorVisible,
                           child: const Text(
                             'Błąd: Nieprawidłowy wiek lub waga dziecka.',
