@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:bench/objects/Med.dart';
+import 'package:bench/services/remote_service.dart';
 import 'package:bench/utils/CalcUtil.dart';
 import 'package:bench/utils/ValidateValuesUtil.dart';
 import 'package:flutter/material.dart';
@@ -78,10 +79,12 @@ class MainScreenState extends State<MainScreen> {
     bool isAgeOK = ValidateValuesUtil().validateAge(age);
     bool isWeightOK = ValidateValuesUtil().validateWeight(weight);
     Med chosenMed = meds.first;
+    int medId = 0;
 
-    for(Med m in meds) {
-      if(m.getName() == medName) {
-        chosenMed = m;
+    for(int i = 0; i < meds.length; ++i) {
+      if(meds[i].getName() == medName) {
+        chosenMed = meds[i];
+        medId = i;
         break;
       }
     }
@@ -96,7 +99,7 @@ class MainScreenState extends State<MainScreen> {
         isErrorVisible = false;
         Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ResultScreen(double.tryParse(weight.replaceAll(',', '.'))!, chosenMed)),
+            MaterialPageRoute(builder: (context) => ResultScreen(double.tryParse(weight.replaceAll(',', '.'))!, medId)),
         );
       });
     }
