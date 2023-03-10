@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:bench/objects/Med.dart';
+import 'package:bench/services/remote_service.dart';
 import 'package:bench/utils/CalcUtil.dart';
 import 'package:bench/utils/ValidateValuesUtil.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'ResultScreen.dart';
 
 String chosenValue = '';
+bool _ageValidated = false;
+bool _weightValidated = false;
 
 class MainScreen extends StatefulWidget {
   MainScreen({Key? key}) : super(key: key);
@@ -19,6 +22,19 @@ class MainScreen extends StatefulWidget {
       Med('Pulmicort', 0.5, 1.0, List.of({10, 20}), 2, 0.25, 5.0)
     },
   );
+
+  void setAgeValidated(bool validated) {
+    _ageValidated = validated;
+  }
+  bool getAgeValidated() {
+    return _ageValidated;
+  }
+  void setWeightValidated(bool validated) {
+    _weightValidated = validated;
+  }
+  bool getWeightValidated() {
+    return _weightValidated;
+  }
 
   @override
   State<MainScreen> createState() => MainScreenState();
@@ -33,27 +49,27 @@ class MainScreenState extends State<MainScreen> {
 
   bool isErrorVisible = false;
 
-  void calc() {
-    double weight = 40.0;
-    print('Weight: ' + weight.toString() + 'kg');
-    double activeSubstance;
-    double dose;
-    for(Med m in meds) {
-      print('---\nMed name: ' + m.getName());
-      print('Power: ' + m.getPowerMg().toString() + 'mg/' + m.getPowerMl().toString() + 'ml');
-      print('Dose: ' + m.getDoseMg().toString() + 'mg/' + m.getDoseKg().toString() + 'kg');
-      activeSubstance = CalcUtil().calculateActiveSubstance(weight, m.getDoseMg(), m.getDoseKg());
-      print('Active Substance: ' + activeSubstance.toString() + 'ml');
-      dose = CalcUtil().calculateDose(activeSubstance, m.powerMg, m.powerMl);
-      print('Dose: ' + dose.toString() + 'ml');
-      if(m.getCapsuleAmount() == 0) {
-        print('Package size: ' + CalcUtil().calculatePackageSizeNoCapsules(7, 2, dose, m.getPackageSizeMl()).toString());
-      }
-      else {
-        print('Package size: ' + CalcUtil().calculatePackageSizeCapsules(7, 2, dose, m.getPackageSizeMl(), m.getCapsuleAmount()).toString());
-      }
-    }
-  }
+  // void calc() {
+  //   double weight = 40.0;
+  //   print('Weight: ' + weight.toString() + 'kg');
+  //   double activeSubstance;
+  //   double dose;
+  //   for(Med m in meds) {
+  //     print('---\nMed name: ' + m.getName());
+  //     print('Power: ' + m.getPowerMg().toString() + 'mg/' + m.getPowerMl().toString() + 'ml');
+  //     print('Dose: ' + m.getDoseMg().toString() + 'mg/' + m.getDoseKg().toString() + 'kg');
+  //     activeSubstance = CalcUtil().calculateActiveSubstance(weight, m.getDoseMg(), m.getDoseKg());
+  //     print('Active Substance: ' + activeSubstance.toString() + 'ml');
+  //     dose = CalcUtil().calculateDose(activeSubstance, m.powerMg, m.powerMl);
+  //     print('Dose: ' + dose.toString() + 'ml');
+  //     if(m.getCapsuleAmount() == 0) {
+  //       print('Package size: ' + CalcUtil().calculatePackageSizeNoCapsules(7, 2, dose, m.getPackageSizeMl()).toString());
+  //     }
+  //     else {
+  //       print('Package size: ' + CalcUtil().calculatePackageSizeCapsules(7, 2, dose, m.getPackageSizeMl(), m.getCapsuleAmount()).toString());
+  //     }
+  //   }
+  // }
 
   void submit(String age, String weight, String medName) {
     // print('Submit: ');
@@ -63,10 +79,12 @@ class MainScreenState extends State<MainScreen> {
     bool isAgeOK = ValidateValuesUtil().validateAge(age);
     bool isWeightOK = ValidateValuesUtil().validateWeight(weight);
     Med chosenMed = meds.first;
+    int medId = 0;
 
-    for(Med m in meds) {
-      if(m.getName() == medName) {
-        chosenMed = m;
+    for(int i = 0; i < meds.length; ++i) {
+      if(meds[i].getName() == medName) {
+        chosenMed = meds[i];
+        medId = i;
         break;
       }
     }
@@ -81,7 +99,7 @@ class MainScreenState extends State<MainScreen> {
         isErrorVisible = false;
         Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ResultScreen(double.tryParse(weight.replaceAll(',', '.'))!, chosenMed)),
+            MaterialPageRoute(builder: (context) => ResultScreen(double.tryParse(weight.replaceAll(',', '.'))!, medId)),
         );
       });
     }
@@ -126,6 +144,9 @@ class MainScreenState extends State<MainScreen> {
                         const SizedBox(
                           height: 20,
                         ),
+                        /*
+                            AGE
+                         */
                         const Text(
                             'Wprowadź wiek dziecka:',
                             style: TextStyle(
@@ -134,22 +155,12 @@ class MainScreenState extends State<MainScreen> {
                         ),
                         SizedBox(
                           width: constraints.maxWidth*0.5,
-                          child: TextField(
-                            controller: ageController,
-                            decoration: InputDecoration(
-                              enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(color: Color(0xff4ba9c8)),
-                                  borderRadius: BorderRadius.circular(20),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Color(0xff4ba9c8)),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              hintText: 'Wiek dziecka',
-                            ),
-                          ),
+                          child: FormTextField(controller: ageController, type: TextFieldType.age,),
                         ),
                         const SizedBox(height: 40,),
+                        /*
+                            WEIGHT
+                         */
                         const Text(
                             'Wprowadź wagę dziecka:',
                             style: TextStyle(
@@ -158,22 +169,12 @@ class MainScreenState extends State<MainScreen> {
                         ),
                         SizedBox(
                           width: constraints.maxWidth*0.5,
-                          child: TextField(
-                            controller: weightController,
-                            decoration: InputDecoration(
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Color(0xff4ba9c8)),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Color(0xff4ba9c8)),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              hintText: 'Waga dziecka',
-                            ),
-                          ),
+                          child: FormTextField(controller: weightController, type: TextFieldType.weight,),
                         ),
                         const SizedBox(height: 40,),
+                        /*
+                            DROPDOWN MENU
+                         */
                         const Text(
                             'Wybierz lek z listy:',
                             style: TextStyle(
@@ -185,6 +186,9 @@ class MainScreenState extends State<MainScreen> {
                           child: const DropdownMenu(),
                         ),
                         const SizedBox(height: 40,),
+                        /*
+                            SUBMIT BUTTON
+                         */
                         RaisedButton(
                           onPressed: () {
                             submit(ageController.text, weightController.text, chosenValue);
@@ -193,6 +197,7 @@ class MainScreenState extends State<MainScreen> {
                         ),
                         const SizedBox(height: 20,),
                         Visibility(
+                          key: const Key('errorText'),
                           visible: isErrorVisible,
                           child: const Text(
                             'Błąd: Nieprawidłowy wiek lub waga dziecka.',
@@ -213,6 +218,10 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 }
+
+/*
+    MED DROPDOWN MENU
+ */
 
 class DropdownMenu extends StatefulWidget {
   const DropdownMenu({key});
@@ -267,6 +276,74 @@ class DropdownMenuState extends State<DropdownMenu> {
             );
           }).toList(),
         ),
+    );
+  }
+}
+
+/*
+    TEXT FIELDS
+ */
+
+enum TextFieldType {
+  age, weight
+}
+
+class FormTextField extends StatefulWidget {
+  const FormTextField({Key? key, required this.controller, required this.type}) : super(key: key);
+
+  final TextEditingController controller;
+  final TextFieldType type;
+
+  @override
+  State<FormTextField> createState() => FormTextFieldState();
+}
+
+class FormTextFieldState extends State<FormTextField> {
+
+  void _validate() {
+    if(widget.type == TextFieldType.age) {
+      MainScreen().setAgeValidated(ValidateValuesUtil().validateAge(widget.controller.text));
+    }
+    else {
+      MainScreen().setWeightValidated(ValidateValuesUtil().validateWeight(widget.controller.text));
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Start listening to changes.
+    widget.controller.addListener(_validate);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Key _key;
+    String _hint;
+    if(widget.type == TextFieldType.age) {
+      _key = const Key('ageTextField');
+      _hint = "Wiek dziecka";
+    }
+    else {
+      _key = const Key('weightTextField');
+      _hint = "Waga dziecka";
+    }
+
+    return TextField(
+      key: _key,
+      controller: widget.controller,
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xff4ba9c8)),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xff4ba9c8)),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        hintText: _hint,
+      ),
     );
   }
 }
