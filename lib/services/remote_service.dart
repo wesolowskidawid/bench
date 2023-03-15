@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:bench/objects/Med.dart';
 import 'package:http/http.dart' as http;
 
@@ -25,16 +26,16 @@ Future<Map<String, String>> fetchData(double weight, int id) async {
   throw Exception('Failed to load data');
 }
 
-// Future<List<Med>> fetchMedList() async {
-//   var client = http.Client();
-//   var url = Uri.https('192.168.0.157:7070', '/meds');
-//   var response = await client.get(url);
-//   print('Response status: ${response.statusCode}');
-//   print('Response body: ${response.body}');
-//   if (response.statusCode == 200) {
-//     var responseBody = json.decode(response.body);
-//     return List<Med>.from(responseBody);
-//   } else {
-//     throw Exception('Failed to load data');
-//   }
-// }
+Future<List<Med>> fetchMedList() async {
+  var url = Uri.http('192.168.0.157:7070', '/meds');
+  var response = await http.get(url);
+  if (response.statusCode == 200) {
+    List<Med> meds = (jsonDecode(response.body) as List<dynamic>)
+      .cast<Map<String, dynamic>>()
+      .map((json) => Med.fromJson(json))
+      .toList();
+    return meds;
+  } else {
+    throw Exception('Failed to load data');
+  }
+}
