@@ -11,17 +11,11 @@ import 'ResultScreen.dart';
 String chosenValue = '';
 bool _ageValidated = false;
 bool _weightValidated = false;
+List<Med> meds = List.empty(growable: true);
+bool isErrorVisible = false;
 
 class MainScreen extends StatefulWidget {
   MainScreen({Key? key}) : super(key: key);
-
-  final List<Med> meds = List.of(
-    {
-      Med('APAP', 40.0, 1.0, List.of({85, 150}), 0, 15.0, 1.0),
-      Med('LEVOpront', 60.0, 10.0, List.of({120}), 0, 1.5, 1.0),
-      Med('Pulmicort', 0.5, 1.0, List.of({10, 20}), 2, 0.25, 5.0)
-    },
-  );
 
   void setAgeValidated(bool validated) {
     _ageValidated = validated;
@@ -42,40 +36,10 @@ class MainScreen extends StatefulWidget {
 
 class MainScreenState extends State<MainScreen> {
 
-  List<Med> meds = MainScreen().meds;
-
   TextEditingController ageController = TextEditingController();
   TextEditingController weightController = TextEditingController();
 
-  bool isErrorVisible = false;
-
-  // void calc() {
-  //   double weight = 40.0;
-  //   print('Weight: ' + weight.toString() + 'kg');
-  //   double activeSubstance;
-  //   double dose;
-  //   for(Med m in meds) {
-  //     print('---\nMed name: ' + m.getName());
-  //     print('Power: ' + m.getPowerMg().toString() + 'mg/' + m.getPowerMl().toString() + 'ml');
-  //     print('Dose: ' + m.getDoseMg().toString() + 'mg/' + m.getDoseKg().toString() + 'kg');
-  //     activeSubstance = CalcUtil().calculateActiveSubstance(weight, m.getDoseMg(), m.getDoseKg());
-  //     print('Active Substance: ' + activeSubstance.toString() + 'ml');
-  //     dose = CalcUtil().calculateDose(activeSubstance, m.powerMg, m.powerMl);
-  //     print('Dose: ' + dose.toString() + 'ml');
-  //     if(m.getCapsuleAmount() == 0) {
-  //       print('Package size: ' + CalcUtil().calculatePackageSizeNoCapsules(7, 2, dose, m.getPackageSizeMl()).toString());
-  //     }
-  //     else {
-  //       print('Package size: ' + CalcUtil().calculatePackageSizeCapsules(7, 2, dose, m.getPackageSizeMl(), m.getCapsuleAmount()).toString());
-  //     }
-  //   }
-  // }
-
   void submit(String age, String weight, String medName) {
-    // print('Submit: ');
-    // print('Age: ' + age + " | valid: " + ValidateValuesUtil().validateAge(age).toString());
-    // print('Weight: ' + weight + " | valid: " + ValidateValuesUtil().validateWeight(weight).toString());
-    // print(medName);
     bool isAgeOK = ValidateValuesUtil().validateAge(age);
     bool isWeightOK = ValidateValuesUtil().validateWeight(weight);
     Med chosenMed = meds.first;
@@ -108,111 +72,149 @@ class MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            return Column(
-              children: [
-                Container(
-                  height: constraints.maxHeight*0.1,
-                  width: constraints.maxWidth,
-                  decoration: const BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Color(0xff4ba9c8),
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Dawka Dziecięca',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xff4ba9c8),
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight*0.9,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        /*
-                            AGE
-                         */
-                        const Text(
-                            'Wprowadź wiek dziecka:',
-                            style: TextStyle(
-                              fontSize: 18,
-                            ),
-                        ),
-                        SizedBox(
-                          width: constraints.maxWidth*0.5,
-                          child: FormTextField(controller: ageController, type: TextFieldType.age,),
-                        ),
-                        const SizedBox(height: 40,),
-                        /*
-                            WEIGHT
-                         */
-                        const Text(
-                            'Wprowadź wagę dziecka:',
-                            style: TextStyle(
-                              fontSize: 18,
-                            ),
-                        ),
-                        SizedBox(
-                          width: constraints.maxWidth*0.5,
-                          child: FormTextField(controller: weightController, type: TextFieldType.weight,),
-                        ),
-                        const SizedBox(height: 40,),
-                        /*
-                            DROPDOWN MENU
-                         */
-                        const Text(
-                            'Wybierz lek z listy:',
-                            style: TextStyle(
-                              fontSize: 18,
-                            ),
-                        ),
-                        SizedBox(
-                          width: constraints.maxWidth*0.5,
-                          child: const DropdownMenu(),
-                        ),
-                        const SizedBox(height: 40,),
-                        /*
-                            SUBMIT BUTTON
-                         */
-                        RaisedButton(
-                          onPressed: () {
-                            submit(ageController.text, weightController.text, chosenValue);
-                          },
-                          child: const Text('Oblicz'),
-                        ),
-                        const SizedBox(height: 20,),
-                        Visibility(
-                          key: const Key('errorText'),
-                          visible: isErrorVisible,
-                          child: const Text(
-                            'Błąd: Nieprawidłowy wiek lub waga dziecka.',
-                            style: TextStyle(
-                              color: Colors.red,
+      body: FutureBuilder(
+        future: fetchMedList(),
+        builder: (context, snapshot) {
+          if(snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator();
+          }
+          else if(snapshot.hasError) {
+            return Text('Error: ' + snapshot.error.toString());
+          }
+          else {
+            meds = snapshot.data as List<Med>;
+            return Center(
+              child: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  return Column(
+                    children: [
+                      Container(
+                        height: constraints.maxHeight*0.1,
+                        width: constraints.maxWidth,
+                        decoration: const BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Color(0xff4ba9c8),
+                              width: 1,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+                        child: const Center(
+                          child: Text(
+                            'Dawka Dziecięca',
+                            style: TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xff4ba9c8),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: constraints.maxWidth,
+                        height: constraints.maxHeight*0.9,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              /*
+                            AGE
+                         */
+                              const Text(
+                                'Wprowadź wiek dziecka:',
+                                style: AppTextStyle.normalFont,
+                              ),
+                              SizedBox(
+                                width: constraints.maxWidth*0.5,
+                                child: FormTextField(controller: ageController, type: TextFieldType.age,),
+                              ),
+                              EmptySpaceWidget(height: 40),
+                              /*
+                            WEIGHT
+                         */
+                              const Text(
+                                'Wprowadź wagę dziecka:',
+                                style: AppTextStyle.normalFont,
+                              ),
+                              SizedBox(
+                                width: constraints.maxWidth*0.5,
+                                child: FormTextField(controller: weightController, type: TextFieldType.weight,),
+                              ),
+                              EmptySpaceWidget(height: 40),
+                              /*
+                            DROPDOWN MENU
+                         */
+                              const Text(
+                                'Wybierz lek z listy:',
+                                style: AppTextStyle.normalFont,
+                              ),
+                              SizedBox(
+                                width: constraints.maxWidth*0.5,
+                                child: const DropdownMenu(),
+                              ),
+                              EmptySpaceWidget(height: 40),
+                              /*
+                            SUBMIT BUTTON
+                         */
+                              RaisedButton(
+                                onPressed: () {
+                                  submit(ageController.text, weightController.text, chosenValue);
+                                },
+                                child: const Text('Oblicz'),
+                              ),
+                              EmptySpaceWidget(height: 20),
+                              const ErrorText(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
             );
-          },
+          }
+        },
+      ),
+    );
+  }
+}
+
+class EmptySpaceWidget extends StatelessWidget {
+
+  final height;
+
+  EmptySpaceWidget({required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(height: 40,);
+  }
+
+}
+
+class AppTextStyle {
+  static const normalFont = TextStyle(fontSize: 18, color: Colors.black);
+}
+
+class ErrorText extends StatefulWidget {
+  const ErrorText({Key? key}) : super(key: key);
+
+  State<StatefulWidget> createState() => ErrorTextState();
+}
+
+class ErrorTextState extends State<ErrorText> {
+  @override
+  Widget build(BuildContext context) {
+    return Visibility(
+      key: const Key('errorText'),
+      visible: isErrorVisible,
+      child: const Text(
+        'Błąd: Nieprawidłowy wiek lub waga dziecka.',
+        style: TextStyle(
+          color: Colors.red,
         ),
       ),
     );
@@ -231,12 +233,12 @@ class DropdownMenu extends StatefulWidget {
 }
 
 class DropdownMenuState extends State<DropdownMenu> {
-  String dropdownValue = MainScreen().meds.first.getName();
+  String dropdownValue = meds.first.getName();
   List<String> medsName = List.empty(growable: true);
 
   void updateMedsName() {
     medsName.clear();
-    for(Med m in MainScreen().meds) {
+    for(Med m in meds) {
       medsName.add(m.getName());
     }
   }
