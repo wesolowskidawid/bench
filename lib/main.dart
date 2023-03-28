@@ -14,11 +14,28 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Dawka Dziecięca',
       theme: ThemeData(
-        primarySwatch: Colors.green,
-        fontFamily: 'SanFrancisco',
+        fontFamily: 'Montserrat',
+        textTheme: appTheme(),
       ),
       // home: LoadingScreen(),
       home: MainScreen(),
     );
   }
+}
+
+TextTheme appTheme() {
+  return const TextTheme(
+    button: TextStyle(
+      fontWeight: FontWeight.normal,
+      fontSize: 16,
+    ),
+    bodyText1: TextStyle(
+      fontWeight: FontWeight.normal,
+      fontSize: 16,
+    ),
+    bodyText2: TextStyle(
+      fontWeight: FontWeight.normal,
+      fontSize: 16,
+    ),
+  );
 }

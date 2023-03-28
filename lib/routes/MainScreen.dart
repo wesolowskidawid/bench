@@ -39,6 +39,8 @@ class MainScreenState extends State<MainScreen> {
   TextEditingController ageController = TextEditingController();
   TextEditingController weightController = TextEditingController();
 
+  // TextStyle style1 = testStyleGenerator().fontFamily("").fontSize(12).build();
+
   void submit(String age, String weight, String medName) {
     bool isAgeOK = ValidateValuesUtil().validateAge(age);
     bool isWeightOK = ValidateValuesUtil().validateWeight(weight);
@@ -76,7 +78,9 @@ class MainScreenState extends State<MainScreen> {
         future: fetchMedList(),
         builder: (context, snapshot) {
           if(snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xff4ba9c8)),
+            );
           }
           else if(snapshot.hasError) {
             return Text('Error: ' + snapshot.error.toString());
@@ -88,46 +92,23 @@ class MainScreenState extends State<MainScreen> {
                 builder: (BuildContext context, BoxConstraints constraints) {
                   return Column(
                     children: [
-                      Container(
-                        height: constraints.maxHeight*0.1,
-                        width: constraints.maxWidth,
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Color(0xff4ba9c8),
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Dawka Dziecięca',
-                            style: TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xff4ba9c8),
-                            ),
-                          ),
-                        ),
-                      ),
+                      AppHeader(constraints: constraints),
                       Container(
                         width: constraints.maxWidth,
                         height: constraints.maxHeight*0.9,
                         child: SingleChildScrollView(
                           child: Column(
                             children: [
-                              const SizedBox(
-                                height: 20,
-                              ),
+                              EmptySpaceWidget(height: 30),
                               /*
                             AGE
                          */
                               const Text(
                                 'Wprowadź wiek dziecka:',
-                                style: AppTextStyle.normalFont,
                               ),
+                              EmptySpaceWidget(height: 8),
                               SizedBox(
-                                width: constraints.maxWidth*0.5,
+                                width: constraints.maxWidth*0.8,
                                 child: FormTextField(controller: ageController, type: TextFieldType.age,),
                               ),
                               EmptySpaceWidget(height: 40),
@@ -136,10 +117,10 @@ class MainScreenState extends State<MainScreen> {
                          */
                               const Text(
                                 'Wprowadź wagę dziecka:',
-                                style: AppTextStyle.normalFont,
                               ),
+                              EmptySpaceWidget(height: 8),
                               SizedBox(
-                                width: constraints.maxWidth*0.5,
+                                width: constraints.maxWidth*0.8,
                                 child: FormTextField(controller: weightController, type: TextFieldType.weight,),
                               ),
                               EmptySpaceWidget(height: 40),
@@ -148,21 +129,38 @@ class MainScreenState extends State<MainScreen> {
                          */
                               const Text(
                                 'Wybierz lek z listy:',
-                                style: AppTextStyle.normalFont,
                               ),
+                              EmptySpaceWidget(height: 8),
                               SizedBox(
-                                width: constraints.maxWidth*0.5,
-                                child: const DropdownMenu(),
+                                width: constraints.maxWidth*0.8,
+                                height: 60,
+                                child: DropdownMenu(width: constraints.maxWidth*0.7,)
                               ),
-                              EmptySpaceWidget(height: 40),
+                              EmptySpaceWidget(height: 60),
                               /*
                             SUBMIT BUTTON
                          */
-                              RaisedButton(
-                                onPressed: () {
-                                  submit(ageController.text, weightController.text, chosenValue);
-                                },
-                                child: const Text('Oblicz'),
+                              SizedBox(
+                                width: constraints.maxWidth*0.8,
+                                height: 60,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    submit(ageController.text, weightController.text, chosenValue);
+                                  },
+                                  child: const Text('Oblicz'),
+                                  style: ElevatedButton.styleFrom(
+                                      primary: Colors.white,
+                                      onPrimary: Colors.black,
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                        side: const BorderSide(
+                                          color: Color(0xff4ba9c8),
+                                          width: 1.0,
+                                        )
+                                      )
+                                  ),
+                                ),
                               ),
                               EmptySpaceWidget(height: 20),
                               const ErrorText(),
@@ -182,21 +180,55 @@ class MainScreenState extends State<MainScreen> {
   }
 }
 
+class AppHeader extends StatelessWidget {
+
+  final BoxConstraints constraints;
+
+  AppHeader({required this.constraints});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: constraints.maxHeight*0.1,
+      width: constraints.maxWidth,
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Color(0xff4ba9c8),
+            width: 1,
+          ),
+        ),
+      ),
+      child: const Center(
+        child: Text(
+          'Dawka Dziecięca',
+          style: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.w600,
+            color: Color(0xff4ba9c8),
+          ),
+        ),
+      ),
+    );
+  }
+
+}
+
 class EmptySpaceWidget extends StatelessWidget {
 
-  final height;
+  final double height;
 
   EmptySpaceWidget({required this.height});
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(height: 40,);
+    return SizedBox(height: height,);
   }
 
 }
 
 class AppTextStyle {
-  static const normalFont = TextStyle(fontSize: 18, color: Colors.black);
+  static const TextStyle normalFont = TextStyle(fontSize: 18, color: Colors.black,);
 }
 
 class ErrorText extends StatefulWidget {
@@ -226,7 +258,9 @@ class ErrorTextState extends State<ErrorText> {
  */
 
 class DropdownMenu extends StatefulWidget {
-  const DropdownMenu({key});
+  final double width;
+
+  DropdownMenu({key, required this.width});
 
   @override
   State<DropdownMenu> createState() => DropdownMenuState();
@@ -254,29 +288,34 @@ class DropdownMenuState extends State<DropdownMenu> {
             borderRadius: BorderRadius.all(Radius.circular(20.0)),
           ),
         ),
-        child: DropdownButton<String>(
-          value: dropdownValue,
-          elevation: 16,
-          isExpanded: true,
-          style: const TextStyle(color: Color(0xff4ba9c8)),
-          underline: Container(
-            height: 2,
-            color: const Color(0xff4ba9c8),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: Center(
+            child: DropdownButton<String>(
+              value: dropdownValue,
+              elevation: 16,
+              isExpanded: true,
+              style: const TextStyle(color: Color(0xff4ba9c8)),
+              underline: const SizedBox(),
+              onChanged: (String? value) {
+                // This is called when the user selects an item.
+                setState(() {
+                  dropdownValue = value!;
+                  chosenValue = dropdownValue;
+                  // print(dropdownValue);
+                });
+              },
+              items: medsName.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              iconEnabledColor: Color(0xff4ba9c8),
+              iconDisabledColor: Colors.grey,
+
+            ),
           ),
-          onChanged: (String? value) {
-            // This is called when the user selects an item.
-            setState(() {
-              dropdownValue = value!;
-              chosenValue = dropdownValue;
-              // print(dropdownValue);
-            });
-          },
-          items: medsName.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
         ),
     );
   }
@@ -346,6 +385,7 @@ class FormTextFieldState extends State<FormTextField> {
         ),
         hintText: _hint,
       ),
+      textAlign: TextAlign.left,
     );
   }
 }
