@@ -5,6 +5,7 @@ import 'package:bench/services/remote_service.dart';
 import 'package:bench/utils/CalcUtil.dart';
 import 'package:bench/utils/ValidateValuesUtil.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'ResultScreen.dart';
 
@@ -63,10 +64,12 @@ class MainScreenState extends State<MainScreen> {
     else {
       setState(() {
         isErrorVisible = false;
-        Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ResultScreen(double.tryParse(weight.replaceAll(',', '.'))!, medId)),
-        );
+        Get.to(() => ResultScreen(weight: double.tryParse(weight.replaceAll(',', '.'))!, id: medId),
+        transition: Transition.downToUp);
+        // Navigator.push(
+        //     context,
+        //     MaterialPageRoute(builder: (context) => ResultScreen(double.tryParse(weight.replaceAll(',', '.'))!, medId)),
+        // );
       });
     }
   }
@@ -208,7 +211,7 @@ class AppHeader extends StatelessWidget {
             color: Color(0xff4ba9c8),
           ),
         ),
-      ),
+      )
     );
   }
 
