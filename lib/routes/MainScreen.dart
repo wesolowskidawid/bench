@@ -1,8 +1,5 @@
-import 'dart:collection';
-
 import 'package:bench/objects/Med.dart';
 import 'package:bench/services/remote_service.dart';
-import 'package:bench/utils/CalcUtil.dart';
 import 'package:bench/utils/ValidateValuesUtil.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,7 +13,7 @@ List<Med> meds = List.empty(growable: true);
 bool isErrorVisible = false;
 
 class MainScreen extends StatefulWidget {
-  MainScreen({Key? key}) : super(key: key);
+  const MainScreen({Key? key}) : super(key: key);
 
   void setAgeValidated(bool validated) {
     _ageValidated = validated;
@@ -45,16 +42,16 @@ class MainScreenState extends State<MainScreen> {
   void submit(String age, String weight, String medName) {
     bool isAgeOK = ValidateValuesUtil().validateAge(age);
     bool isWeightOK = ValidateValuesUtil().validateWeight(weight);
-    Med chosenMed = meds.first;
+    // Med chosenMed = meds.first;
     int medId = 0;
 
-    for(int i = 0; i < meds.length; ++i) {
-      if(meds[i].getName() == medName) {
-        chosenMed = meds[i];
-        medId = i;
-        break;
-      }
-    }
+    // for(int i = 0; i < meds.length; ++i) {
+    //   if(meds[i].getName() == medName) {
+    //     chosenMed = meds[i];
+    //     medId = i;
+    //     break;
+    //   }
+    // }
 
     if(!isAgeOK || !isWeightOK) {
       setState(() {
@@ -96,50 +93,50 @@ class MainScreenState extends State<MainScreen> {
                   return Column(
                     children: [
                       AppHeader(constraints: constraints),
-                      Container(
+                      SizedBox(
                         width: constraints.maxWidth,
                         height: constraints.maxHeight*0.9,
                         child: SingleChildScrollView(
                           child: Column(
                             children: [
-                              EmptySpaceWidget(height: 30),
+                              const EmptySpaceWidget(height: 30),
                               /*
                             AGE
                          */
                               const Text(
                                 'Wprowadź wiek dziecka:',
                               ),
-                              EmptySpaceWidget(height: 8),
+                              const EmptySpaceWidget(height: 8),
                               SizedBox(
                                 width: constraints.maxWidth*0.8,
                                 child: FormTextField(controller: ageController, type: TextFieldType.age,),
                               ),
-                              EmptySpaceWidget(height: 40),
+                              const EmptySpaceWidget(height: 40),
                               /*
                             WEIGHT
                          */
                               const Text(
                                 'Wprowadź wagę dziecka:',
                               ),
-                              EmptySpaceWidget(height: 8),
+                              const EmptySpaceWidget(height: 8),
                               SizedBox(
                                 width: constraints.maxWidth*0.8,
                                 child: FormTextField(controller: weightController, type: TextFieldType.weight,),
                               ),
-                              EmptySpaceWidget(height: 40),
+                              const EmptySpaceWidget(height: 40),
                               /*
                             DROPDOWN MENU
                          */
                               const Text(
                                 'Wybierz lek z listy:',
                               ),
-                              EmptySpaceWidget(height: 8),
+                              const EmptySpaceWidget(height: 8),
                               SizedBox(
                                 width: constraints.maxWidth*0.8,
                                 height: 60,
                                 child: DropdownMenu(width: constraints.maxWidth*0.7,)
                               ),
-                              EmptySpaceWidget(height: 60),
+                              const EmptySpaceWidget(height: 60),
                               /*
                             SUBMIT BUTTON
                          */
@@ -152,8 +149,8 @@ class MainScreenState extends State<MainScreen> {
                                   },
                                   child: const Text('Oblicz'),
                                   style: ElevatedButton.styleFrom(
-                                      primary: Colors.white,
-                                      onPrimary: Colors.black,
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: Colors.black,
                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(20),
@@ -165,7 +162,7 @@ class MainScreenState extends State<MainScreen> {
                                   ),
                                 ),
                               ),
-                              EmptySpaceWidget(height: 20),
+                              const EmptySpaceWidget(height: 20),
                               const ErrorText(),
                             ],
                           ),
@@ -187,7 +184,7 @@ class AppHeader extends StatelessWidget {
 
   final BoxConstraints constraints;
 
-  AppHeader({required this.constraints});
+  const AppHeader({Key? key, required this.constraints}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +218,7 @@ class EmptySpaceWidget extends StatelessWidget {
 
   final double height;
 
-  EmptySpaceWidget({required this.height});
+  const EmptySpaceWidget({Key? key, required this.height}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -237,6 +234,7 @@ class AppTextStyle {
 class ErrorText extends StatefulWidget {
   const ErrorText({Key? key}) : super(key: key);
 
+  @override
   State<StatefulWidget> createState() => ErrorTextState();
 }
 
@@ -263,7 +261,7 @@ class ErrorTextState extends State<ErrorText> {
 class DropdownMenu extends StatefulWidget {
   final double width;
 
-  DropdownMenu({key, required this.width});
+  const DropdownMenu({Key? key, required this.width}) : super(key: key);
 
   @override
   State<DropdownMenu> createState() => DropdownMenuState();
@@ -314,7 +312,7 @@ class DropdownMenuState extends State<DropdownMenu> {
                   child: Text(value),
                 );
               }).toList(),
-              iconEnabledColor: Color(0xff4ba9c8),
+              iconEnabledColor: const Color(0xff4ba9c8),
               iconDisabledColor: Colors.grey,
 
             ),
@@ -346,10 +344,10 @@ class FormTextFieldState extends State<FormTextField> {
 
   void _validate() {
     if(widget.type == TextFieldType.age) {
-      MainScreen().setAgeValidated(ValidateValuesUtil().validateAge(widget.controller.text));
+      const MainScreen().setAgeValidated(ValidateValuesUtil().validateAge(widget.controller.text));
     }
     else {
-      MainScreen().setWeightValidated(ValidateValuesUtil().validateWeight(widget.controller.text));
+      const MainScreen().setWeightValidated(ValidateValuesUtil().validateWeight(widget.controller.text));
     }
   }
 
